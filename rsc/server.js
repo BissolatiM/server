@@ -1,46 +1,24 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
-app.use(express.json());
-require('dotenv').config();
+import express from "express";
+import mongoose from "mongoose";
+import cors from "cors";
+import interrupcaoRoutes from "./routes/interrupcoes.js";
 
 const app = express();
-app.use(cors());
 app.use(express.json());
+app.use(cors());
 
-mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true });
+// Rotas
+app.use("/api/interrupcoes", interrupcaoRoutes);
 
-const Patient = mongoose.model('Patient', new mongoose.Schema({
-  name: String,
-  email: String,
-  phone: String,
-  dateOfBirth: Date,
-}));
+// Conexão com MongoDB
+mongoose.connect("mongodb://localhost:27017/interrupcoesDB", {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+}).then(() => console.log("MongoDB conectado"))
+  .catch(err => console.error("Erro ao conectar MongoDB:", err));
 
-const Appointment = mongoose.model('Appointment', new mongoose.Schema({
-  patientId: { type: mongoose.Schema.Types.ObjectId, ref: 'Patient' },
-  date: Date,
-  reason: String,
-}));
-
-app.get('/patients', async (req, res) => {
-  const patients = await Patient.find();
-  res.json(patients);
-});
-
-app.post('/patients', async (req, res) => {
-  const newPatient = new Patient(req.body);
-  await newPatient.save();
-  res.status(201).json(newPatient);
-});
-
-app.get('/appointments', async (req, res) => {
-  const appointments = await Appointment.find().populate('patientId');
-  res.json(appointments);
-});
-
-app.post('/appointments', async (req, res) => {
-  const newAppointment = new Appointment(req.body);
+const PORT = 5000;
+app.listen(PORT, () => console.log(`Servidor rodando na porta ${PORT}`));
   await newAppointment.save();
   res.status(201).json(newAppointment);
 });
